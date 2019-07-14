@@ -1,0 +1,64 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+%\renewcommand\UrlFont{\color{blue}\rmfamily}
+%\usepackage{algorithm,algorithmic}
+\usepackage[utf8]{inputenc}
+%\usepackage[show]{chato-notes}
+
+% - revision support
+\iftrue
+\usepackage{color}
+\usepackage{soul}
+\definecolor{coladd}{RGB}{0, 30, 180}
+\definecolor{colnote}{RGB}{0, 140, 70}
+\definecolor{colrm}{RGB}{180, 30, 0}
+\newcommand{\revrm}[1]{{\color{colrm} \sout{#1}}}
+\newcommand{\revadd}[1]{{\color{coladd} #1}}
+\newcommand{\revchange}[2]{\revrm{#1} \revadd{#2}}
+\newcommand{\revnote}[1]{{\color{colnote} \textbf{$\big[$#1$\big]$}}}
+\fi
+
+\begin{document}
+
+
+\title{The Power of Two Choices in Randomized Load Balancing}
+
+\author{Lorenzo Beretta\inst{1}%\orcidID{0000-1111-2222-3333}
+}
+%
+%\authorrunning{Beretta {\em et al.}}
+\authorrunning{  }
+\titlerunning{  }
+%
+\institute{%
+\email{lorenzo.beretta@sns.it}
+}
+
+\maketitle
+
+\input{0.introduction}
+
+\input{1.basics}
+
+\input{2.one}
+
+\input{3.two}
+
+\input{4.conclusions}
+
+
+\clearpage{}
+\bibliographystyle{splncs04}
+\bibliography{biblio}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
