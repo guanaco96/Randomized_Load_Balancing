@@ -11,15 +11,15 @@ If the same job is queried twice it is convenient to assign
 it to the same machine since caching plays an important role in application
 responsiveness, we call this property ``persistency''.  
 The simplest assignment scheme is to assign the $i$-th job to the
-$j$-th machine if $j \equiv i \pmod m$. This assignment fulfill the previous
-two requests but presents a big downside: it is vulnerable to hacking. Immagine
+$j$-th machine if $j \equiv i \pmod m$. This assignment is both fair and
+persistent but presents a big downside: it is vulnerable to hacking. Immagine
 that an adversarial client wants to slow down our server, it is sufficient
-that he sends many queries belonging to the same class $\mod m$. Then it is
+that he sends many queries belonging to the same class mod $m$. Then it is
 paramount to employ more complex assignment schemes, in particular we will see
 that randomized hashing will play a major role in this problem. Let us dig into
 the mathematical tools necessary to deal with those random structures.
 
-\subsection{Chernoff Bound}
+\subsection{Concentration Bounds}
 Immagine a piece of
 software that takes on average one second to load, but once in a while it
 freezes for minutes. It is certainly not good software. Indeed one of the main
@@ -30,7 +30,7 @@ random algorithms we often do not content ourself of analyzing their
 performance on average, instead we look for probabilistic guarantees
 that execution times will concentrate around average.
 
-For the rest of this subsection let $\bigl(X_i\bigr)$ be Bernoulli random
+For the rest of this subsection let $\bigl(X_i\bigr)$ be i.i.d. Bernoulli random
 variables, $p = \mathbb{P}\bigl(X_i = 1\bigr)$ , and $X = \sum_{i=1}^n X_i$ be a binomial
 random variable. How is $X$ concentrated around $\mathbb{E}\bigl[X\bigr] = n p$?
 Two well known concentration bounds are the Markov's inequality
@@ -42,21 +42,79 @@ and Chebyshev's inequality
 \pr(X \geq (1 + \delta)np) \leq \frac{\mathrm{Var}[X]}{\delta^2 n^2 p^2} = \frac{1 - p}{\delta^2 n p}.
 \end{equation*}
 
-The latter is more powerful and captures the law of large numbers. Let us expose
-a much more powerful concentration bound stating the exponential decay
+The latter is more powerful and captures the law of large numbers. Now we expose
+a more powerful concentration bound stating the exponential decay
 of binomial distribution's tail.
 
 \begin{theorem}{\textbf{(Chernoff Bound)}}
   If $X$ is defined as above then
-  \begin{equation*}
+  \begin{equation}
     \pr\left(X \geq (1+\delta) np\right) \leq \left(\frac{e^\delta}{(1+\delta)^{1+\delta}}\right)^{np}
-  \end{equation*}
+  \end{equation}\label{chernoff_1}
   and in particular if we set $\delta = 1$
-  \begin{equation*}
+  \begin{equation}\label{chernoff_2}
     \pr\left(X \geq 2 np\right) \leq e^{-np/3}.
-  \end{equation*}
+  \end{equation}
 \end{theorem}
-  
+\begin{proof}
+  Let $a \in \R$ and $t \geq 0$, apply Markov's inequality and
+  factorize the expected value of independent variables
+  \begin{equation*}
+    \pr\left(X \geq a \right) = \pr\left( e^{tX} \geq e^{ta} \right) \leq
+      e^{-ta} \cdot \mathbb{E} [e^{tX}] =
+    e^{-ta} \cdot \prod_{i = 1}^n \mathbb{E}\left[e^{t X_i}\right]. 
+  \end{equation*}
+  Now bound $e^{X_i}$ from above
+  \begin{equation*}
+    \mathbb{E}\left[e^{X_i}\right] = 1  + p \left( e^t - 1 \right) \leq
+    e^{p \left( e^t - 1 \right)}.
+  \end{equation*}
+  Setting $t = \log(1 + \delta)$ and $a = (1+\delta)np$ we get
+  \begin{equation*}
+    \pr\left(X \geq (1+\delta)np \right) \leq
+     (1+\delta)^{-(1+\delta)np} \cdot \prod_{i = 1}^n e^{p\delta} =
+    \left(\frac{e^\delta}{(1+\delta)^{1+\delta}}\right)^{np}.
+  \end{equation*}
+  To obtain the inequality \eqref{chernoff_2} from \eqref{chernoff_1} it is sufficient to set $\delta = 1$ and notice that $ \log(4) \geq 4 / 3$ implies $e / 4 \leq e^{-1/3}$.
+\end{proof}
+
+\subsection{Randomized Hashing}
+As already stated we want to prevent a single client from overloading
+our machines unbalancing the job assignment. If our assignment scheme is
+deterministic, then it is sufficient to invert it in order to send all the
+queries to a single machine. We face this problem choosing the mapping
+at random.
+
+\begin{definition}{\textbf{(Perfectly Random Hashing)}
+    Let $\left(\mathcal{H}, \pr \right)$ be a probability space where
+    $\mathcal{H} \subset \left\{h \, | \, h : [1, \dots n]
+      \rightarrow [1, \dots m]\right\} $ are hash functions.
+    We define it a perfectly random hashing family if
+    \begin{equation*}
+      \pr\left(h(a) = \alpha_a \, \left| \, \bigwedge_{b \neq a}h(b) = \alpha_b
+      \right\right) = \frac{1}{m}. 
+    \end{equation*}
+\end{definition}
+Sampling $h$ form a perfectly random hashing family $\mathcal{H}$ and looking
+at its images we get $\left\{h(i)\right\}_{i\leq n}$ i.i.d. uniform
+random variables over $[1, \dots m]$.
+In this survey we will always assume to dispose of perfectly random
+hashing families. Unfortunately it is not possible to obtain $n$-wise
+independence assuming that the hash functions have to be stored in
+little space and evaluated quickly\footnote{Indeed Karp {\em et al.} in
+\cite{Karp} carefully devise hash functions having approximate independence
+properties.}. On the other hand this assumption allows us to prove tight
+bounds on the load charged by assignment schemes based on these families.
+Finally it is worth noting that, although in practice hash functions do not
+produce $n$-wise independent values,the guarantees provided by theoretical
+bounds are met. This suggest that we can trust bounds even if they are
+proven exploiting stronger distributional hypotheses.
+
+Now we dispose of every tool we need to present the first assignment scheme
+being fair, persistent and preventing malicious attacks.
+Recall that we have $m$ machines to distribute $n$ jobs among, we sample a
+random hash function $h$ from the perfectly random family $\mathcal{H}$ and
+assign the $i$-th job to $h(i)$. 
 
 
 
@@ -66,7 +124,7 @@ of binomial distribution's tail.
 
 
 
-\end{itemize}
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "paper"
