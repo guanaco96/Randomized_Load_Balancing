@@ -3,7 +3,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage[normalem]{ulem}
-\usepackage{amsmath}
+\usepackage{amsmath,amssymb}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage[utf8]{inputenc}
@@ -21,12 +21,14 @@
 \newcommand{\revnote}[1]{{\color{colnote} \textbf{$\big[$#1$\big]$}}}
 \fi
 
+\DeclareMathOperator{\pr}{\mathbb{P}}
+
 \begin{document}
 
 
-\title{The Power of Two Choices in Randomized Load Balancing}
+\title{The Power of Two Choices}
 
-\author{Lorenzo Beretta\inst{1} al.}}
+\author{Lorenzo Beretta}}
 \authorrunning{  }
 \titlerunning{  }
 %
@@ -37,11 +39,16 @@
 \maketitle
 
 \begin{abstract}
-
-  
-\keywords{Tournament Graph \and Round-Robin Tournament \and Copeland Winner}
+  Suppose that we place $n$ balls into $n$ bins by putting each ball into a bin
+  chosen independently and uniformly at random. It turns out that there are
+  at most $O\bigl(\log(n) / \log\bigl(\log(n)\bigr)\bigr)$ balls in each
+  bin with high probability. If instead of one we choose two bins independently
+  and uniformly and place the ball in the
+  least loaded of the two we get at most $O\bigr(\log\bigl(\log(n)\bigr)\bigr)$
+  balls in each bin with high probability. This scheme found many applications
+  and we will briefly expose two of them: load balancing and PRAM simulation.
+\keywords{Hashing \and Load Balancing \and PRAM Simulation \and Balls and Bins}
 \end{abstract}
-
 
 \input{0.introduction}
 

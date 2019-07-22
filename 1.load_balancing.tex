@@ -1,6 +1,72 @@
 \section{Load Balancing}
 
+In a typical distributed server there are $m$ machines serving $n$ jobs
+queried form clients. We want to assign jobs
+to machines ensuring a fair load, a persistent choice, and preventing a
+malicious client from unbalancing machines.
+We define a job assignment ``fair'' if any machine gets approximately
+$n / m$ jobs, it is of main importance that our assignment is fair since
+it guarantees a predictable throughput.
+If the same job is queried twice it is convenient to assign
+it to the same machine since caching plays an important role in application
+responsiveness, we call this property ``persistency''.  
+The simplest assignment scheme is to assign the $i$-th job to the
+$j$-th machine if $j \equiv i \pmod m$. This assignment fulfill the previous
+two requests but presents a big downside: it is vulnerable to hacking. Immagine
+that an adversarial client wants to slow down our server, it is sufficient
+that he sends many queries belonging to the same class $\mod m$. Then it is
+paramount to employ more complex assignment schemes, in particular we will see
+that randomized hashing will play a major role in this problem. Let us dig into
+the mathematical tools necessary to deal with those random structures.
 
+\subsection{Chernoff Bound}
+Immagine a piece of
+software that takes on average one second to load, but once in a while it
+freezes for minutes. It is certainly not good software. Indeed one of the main
+performance metric is the \textit{predictability}, that is the tendency
+of execution
+time not to deviate from expectation. As a consequence while devising
+random algorithms we often do not content ourself of analyzing their
+performance on average, instead we look for probabilistic guarantees
+that execution times will concentrate around average.
+
+For the rest of this subsection let $\bigl(X_i\bigr)$ be Bernoulli random
+variables, $p = \mathbb{P}\bigl(X_i = 1\bigr)$ , and $X = \sum_{i=1}^n X_i$ be a binomial
+random variable. How is $X$ concentrated around $\mathbb{E}\bigl[X\bigr] = n p$?
+Two well known concentration bounds are the Markov's inequality
+\begin{equation*}
+\pr(X \geq (1 + \delta)np) \leq \frac{1}{1 + \delta}
+\end{equation*}
+and Chebyshev's inequality
+\begin{equation*}
+\pr(X \geq (1 + \delta)np) \leq \frac{\mathrm{Var}[X]}{\delta^2 n^2 p^2} = \frac{1 - p}{\delta^2 n p}.
+\end{equation*}
+
+The latter is more powerful and captures the law of large numbers. Let us expose
+a much more powerful concentration bound stating the exponential decay
+of binomial distribution's tail.
+
+\begin{theorem}{\textbf{(Chernoff Bound)}}
+  If $X$ is defined as above then
+  \begin{equation*}
+    \pr\left(X \geq (1+\delta) np\right) \leq \left(\frac{e^\delta}{(1+\delta)^{1+\delta}}\right)^{np}
+  \end{equation*}
+  and in particular if we set $\delta = 1$
+  \begin{equation*}
+    \pr\left(X \geq 2 np\right) \leq e^{-np/3}.
+  \end{equation*}
+\end{theorem}
+  
+
+
+
+
+
+
+
+
+
+\end{itemize}
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "paper"
