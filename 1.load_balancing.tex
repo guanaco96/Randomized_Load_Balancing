@@ -124,12 +124,75 @@ Recall that we have $n$ jobs to distribute over $m$ machines, we sample a
 random hash function $h$ from the perfectly random family $\mathcal{H}$ and
 assign the $i$-th job to $h(i)$. Let us analyze this algorithm.
 
-\begin{theorem}{\textbf{(One Choice Hashing)}
-    
-  
+\begin{theorem}{\textbf{(One Choice Balancing)}
+    Given the assignment described above, and assuming $n / m$ constant,
+    denote with $X_j$ the number of jobs assigned to the $j$-th machine, then
+  \begin{equation*}
+    \pr\left(\max_{j\leq m} X_j \leq \frac{n}{m} + 6 \log(n)\right) \geq
+    1 - \frac{1}{n}.
+  \end{equation*}
 \end{theorem}
 
+\begin{proof}
+  Let $Y_j^i$ be a random variable evaluating one if $i$-th job is assigned
+  to the $j$-th machine and zero otherwise. Thus $\bigl(Y_j^i\bigr)_{i\leq n}$
+  are i.i.d. Bernoulli random variables and we get
+  $X_j$ = $\sum_{i\leq n}Y_j^i$. Now apply the
+  inequality \eqref{chernoff_2} with $\bar{\mu} = \mathbb{E}[X_j] = n / m$
+  and $\lambda = 6 \log(n)$ to prove
+  \begin{gather*}
+    \pr\left(X_j > \frac{n}{m} + 6 \log(n)\right) \leq \\
+    \exp\left(- \frac{\left(6\log(n)\right)^2}{2\frac{n}{m} +
+    6\log(n)}\right) \leq\\
+    \exp\left(-2\log(n) \right) = \frac{1}{n^2}
+  \end{gather*}
+  for each $j \leq m$. The proof is concluded via union bound.
+\end{proof}
 
+\subsection{Two Choices Load Balancing}
+Although the previous assignment algorithm provided a good guarantee
+in terms of maximum load on a single machine, we can do better keeping the
+algorithm very simple. Now we sample two random hash function $h_1$ and $h_2$
+from a perfectly random family $\mathcal{H}$, and process the jobs sequentially. We assign the $i$-th job to the least loaded machine so far
+between $h_1(i)$ and $h_2(i)$.
+For the sake of simplicity we will assume that $n=m$ and prove\footnote{This
+  proof is rather technical and it has been taken from Mitzenmacher
+  {\em et al.} \cite{Mitzenmacher}} the following theorem bounding
+the maximum load.
+
+\begin{theorem}{\textbf{(Two Choices Balancing)}
+    Suppose that we assign $n$ jobs to $n$ machines following the algorithm
+    above. Denoting with $X_j$ the number of jobs assigned to the $j$-th
+    machine we get
+    \begin{equation*}
+      \pr\left(\max_{j\leq m} X_j \leq \log\left(\log(n)\right) + O(1)\right)
+      \geq 1 - \frac{1}{n}.
+    \end{equation*}
+\end{theorem}
+Before we can start the proof we need the following lemma.
+\begin{lemma}
+  Given $\bigl(X_i\bigr)_{i=1, \dots n}$ random variables, and for each
+  $i\leq n$ a map $f_i$ taking values in $\{0, 1\}$ we define
+  the boolean random variable $Y_i = f_i(X_1, \dots X_i)$.
+  If for each $i \leq n$ and for every choice of $\alpha_1, \dots \alpha_n$
+  \begin{equation*}
+    \pr\left(Y_i = 1 \, \left| \, X_j = \alpha_j
+    \; \forall j \leq i\right\right) \leq p
+\end{equation*}
+then
+\begin{equation*}
+  \pr\left(\sum_{i=1}^n Y_i > k\right) \leq
+  \pr\left( B(n,p) > k\right)
+\end{equation*}
+where $B(n,p)$ is a Binomial random variable that of parameters $n$ and $p$.
+\end{lemma}
+\begin{proof}{(Lemma)}
+  It is sufficient to construct a probability space and random variables
+  $\bigl(\tilde{Y_i}\bigr)_{i\leq n}$ and $\bigl(Z_i\bigr)_{i=\leq n}$ such that
+  $Z_i
+  
+\end{proof}
+  
 
 
 
