@@ -166,7 +166,7 @@ the maximum load.
     machine we get
     \begin{equation*}
       \pr\left(\max_{j\leq m} X_j \leq \log\left(\log(n)\right) + O(1)\right)
-      \geq 1 - \frac{1}{n}.
+      \geq 1 - o\left(\frac{1}{n}\right).
     \end{equation*}
 \end{theorem}
 Before we can start the proof we need the following lemma.
@@ -184,12 +184,12 @@ then
   \pr\left(\sum_{i=1}^n Y_i > k\right) \leq
   \pr\left( B(n,p) > k\right)
 \end{equation*}
-where $B(n,p)$ is a Binomial random variable that of parameters $n$ and $p$.
+where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
 \end{lemma}
 \begin{proof}{(Lemma)}
   It is sufficient to construct a probability space and random variables
   $\bigl(\tilde{Y_i}\bigr)_{i\leq n}$ and $\bigl(Z_i\bigr)_{i=\leq n}$ such that
-  $Z_i$ are i.i.d. Bernoulli and
+  $\bigl(Z_i\bigr)_{i=\leq n}$  are i.i.d. Bernoulli, $Y_i$ and $\tilde{Y}_i$ have the same distribution for each $i\leq n$ and
   \begin{equation*}
     \pr\left(Y_i \leq Z_i\right) = 1.
   \end{equation*}
@@ -225,17 +225,17 @@ where $B(n,p)$ is a Binomial random variable that of parameters $n$ and $p$.
       \left(\frac{\beta_i}{n}\right)^2.
     \end{gathered}
   \end{equation*}
-  Now, defining $p = \bigl(\beta_i / n\bigr)^2$, and applying Lemma
+  Now, defining $p_i = \bigl(\beta_i / n\bigr)^2$, and applying Lemma
   \eqref{Binomial} we get
   \begin{equation*}
     \pr\left(\sum_{t=1}^n Y_t > k \right) \leq \pr\left(B(n, p_i) > k\right).
   \end{equation*}
   Let us define the event $E_i = \left\{v_i(n) \leq \beta_i\left\}$.
   Then we can prove that
-  \begin{equation*}
-    \pr\left(v_{i+1}(n) > \beta_{i+1}\right) \leq
+  \begin{equation}\label{eq1}
+    \pr\left(v_{i+1}(n) > \beta_{i+1}\, \left| \, E_i\right\right) \leq
     \frac{e^{-np_i/3}}{\pr\left(E_i\right)}.
-  \end{equation*}
+  \end{equation}
   Indeed we have
   \begin{equation*}
     \begin{aligned}
@@ -253,6 +253,56 @@ where $B(n,p)$ is a Binomial random variable that of parameters $n$ and $p$.
     $\sum_{t=1}^nY_t$ counts the number of $t$ such that $h(t) \geq i$.
     Finally the last inequality is an application of Chernoff bound
     \eqref{chernoff_2}.
+    If we restrict ourselves to values of $i$ such that $p_i n \geq 6\log(n)$
+    we get
+    \begin{equation}\label{eq2}
+      \pr\left(\lnot E_{i+1} \, \left|\, E_i\right\right) =
+      \pr\left(v_{i+1}(n) > \beta_{i+1} \, \left|\, E_i\right\right) \leq
+      \frac{1}{n^2 \pr\left(E_i\right)}
+    \end{equation}
+    and therefore
+    \begin{equation*}
+      \begin{aligned}
+      \pr\left(\lnot E_{i+1}\right) =\\
+      \pr\left(E_i\right) \cdot
+      \pr\left(\lnot E_{i+1} \, \left|\, E_i\right\right) +
+      \pr\left(\lnot E_i\right) \cdot
+      \pr\left(\lnot E_{i+1} \, \left|\, \lnot E_i\right\right) \leq \\
+      \pr\left(\lnot E_i\right) + \frac{1}{n^2}
+    \end{aligned}
+    \end{equation*}
+    that inducing over $i$ proves that for each $i$ s.t. $p_in \geq 6\log(n)$
+    \begin{equation*}
+      \pr\left(\lnot E_i\right) \leq \frac{i}{n^2}.
+    \end{equation*}
+    Then we want to find the minimum $i^*$ such that $p_{i^*}n < 6\log(n)$ and
+    our final goal is to prove that
+    $ \pr\left(v_{i^*+3} \geq 1 \right) = o\left(\frac{1}{n}\right)$.
+    Meaning that there is no machine loaded with more than $i^* + 3$
+    jobs with high probability.
+
+    It is easy to prove by induction on that
+    \begin{equation*}
+      p_{i+4} = 2^{-(2^{i+1} + 2)}
+    \end{equation*}
+    hence $i^* = \log\left(\log(n)\right) + O(1)$. Moreover
+    $\beta_{i^* + 1} = 2 p_{i^*}n \leq 12 \log(n)$ then, exploiting the
+    inequality \eqref{eq1} we get
+    \begin{equation*}
+      \pr\left(v_{i^*+1} \geq 12\log(n)\,\left|\, E_i\right \right)\leq
+      \frac{1}{n^2\pr\left(E_i\right)}.
+    \end{equation*}
+    Applying the same argument of inequality \eqref{eq2} we obtain
+    \begin{equation*}
+      \pr\left(v_{i^*+1} \geq 12\log(n)\right)\leq
+      \pr\left(\lnot E_i\right) + \frac{1}{n^2} = \frac{i^*+1}{n^2}.
+    \end{equation*}
+    
+    
+    
+    
+
+    
 \end{proof}
 
 
