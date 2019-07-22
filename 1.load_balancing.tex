@@ -170,7 +170,7 @@ the maximum load.
     \end{equation*}
 \end{theorem}
 Before we can start the proof we need the following lemma.
-\begin{lemma}
+\begin{lemma}\label{Binomial}
   Given $\bigl(X_i\bigr)_{i=1, \dots n}$ random variables, and for each
   $i\leq n$ a map $f_i$ taking values in $\{0, 1\}$ we define
   the boolean random variable $Y_i = f_i(X_1, \dots X_i)$.
@@ -189,10 +189,71 @@ where $B(n,p)$ is a Binomial random variable that of parameters $n$ and $p$.
 \begin{proof}{(Lemma)}
   It is sufficient to construct a probability space and random variables
   $\bigl(\tilde{Y_i}\bigr)_{i\leq n}$ and $\bigl(Z_i\bigr)_{i=\leq n}$ such that
-  $Z_i
-  
+  $Z_i$ are i.i.d. Bernoulli and
+  \begin{equation*}
+    \pr\left(Y_i \leq Z_i\right) = 1.
+  \end{equation*}
+  The construction is rather technical and it does not concern this
+  survey.
 \end{proof}
-  
+\begin{proof}(Theorem)
+  Let us start defining several variables:
+  \begin{itemize}
+  \item $\beta_i$ is a sequence such that $\beta_4 = n / 4$ and
+    $\beta_{i+1} = 2\beta_i^2 / n$
+  \item $h(t)$ is the number of jobs assigned to the machine chosen
+    at time step t
+  \item $v_i(t)$ is the number of machines having assigned at least $i$
+    jobs at time step $t$
+  \item $u_i(t)$ is the number of $s \leq t$ such that $h(s) \geq i$.
+  \end{itemize}
+  Notice that $v_i(t)$ and $u_i(t)$ are monotone in both $i$ and $t$. Moreover for each $i$ and $t$ $$v_i(t) \leq u_i(t).$$
+  Now we consider $i$ fixed and define the boolean random variable
+  $Y_t$ such that
+  \begin{equation*}
+    Y_t = 1 \iff h(t)\geq i+1 \; \land \; v_i(t-1) \leq \beta_i. 
+  \end{equation*}
+  If $X_s$ is a random variable denoting the machine chosen at time
+  step $s$ then $Y_t$ is a deterministic function of $\bigl(X_s\bigr)_{s\leq t}$
+  and by the definition of $Y_t$ it follows that
+  \begin{equation*}
+    \begin{gathered}
+      \pr\left(Y_t = 1 \, \left| \, X_s = \alpha_s \; \forall s < t
+        \right\right) \leq \\
+      \pr\left(h(t) \geq i + 1 \, \left| \, X_s = \alpha_s \; \forall s < t
+          \; \land \; v_i(t-1)\right\right) \leq
+      \left(\frac{\beta_i}{n}\right)^2.
+    \end{gathered}
+  \end{equation*}
+  Now, defining $p = \bigl(\beta_i / n\bigr)^2$, and applying Lemma
+  \eqref{Binomial} we get
+  \begin{equation*}
+    \pr\left(\sum_{t=1}^n Y_t > k \right) \leq \pr\left(B(n, p_i) > k\right).
+  \end{equation*}
+  Let us define the event $E_i = \left\{v_i(n) \leq \beta_i\left\}$.
+  Then we can prove that
+  \begin{equation*}
+    \pr\left(v_{i+1}(n) > \beta_{i+1}\right) \leq
+    \frac{e^{-np_i/3}}{\pr\left(E_i\right)}.
+  \end{equation*}
+  Indeed we have
+  \begin{equation*}
+    \begin{aligned}
+      \pr\left(v_{i+1}(n) > \beta_{i+1}\, \left| \,E_i\right\right) \leq \\
+      \pr\left(u_{i+1}(n) > \beta_{i+1}\, \left| \,E_i\right\right) = \\
+      \pr\left(\sum_{t=1}^n Y_t > \beta_{i+1}\, \bigg| \,E_i\right) \leq \\
+      \frac{\pr\left(\sum_{t=1}^n Y_t > \beta_{i+1}\right)}{\pr\left(E_i\right)}
+      \leq \\
+      \frac{\pr\left(B(n, p) > 2n p_i \right)}{\pr\left(E_i\right)} \leq \\ 
+      \frac{e^{-np_i/3}}{\pr\left(E_i\right)}.
+    \end{aligned}
+  \end{equation*}
+    The first inequality is valid since $v_i(t) \leq u_i(t)$ for each
+    $i$ and $t$, the second equality is there since conditioned to $E_i$
+    $\sum_{t=1}^nY_t$ counts the number of $t$ such that $h(t) \geq i$.
+    Finally the last inequality is an application of Chernoff bound
+    \eqref{chernoff_2}.
+\end{proof}
 
 
 
