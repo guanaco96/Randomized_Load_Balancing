@@ -205,9 +205,12 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
     at time step t
   \item $v_i(t)$ is the number of machines having assigned at least $i$
     jobs at time step $t$
-  \item $u_i(t)$ is the number of $s \leq t$ such that $h(s) \geq i$.
+  \item $u_i(t)$ is the number of $s \leq t$ such that $h(s) \geq i$
+  \item $E_i$ is the event $\left\{v_i(n) \leq \beta_i\left\}$.
   \end{itemize}
   Notice that $v_i(t)$ and $u_i(t)$ are monotone in both $i$ and $t$. Moreover for each $i$ and $t$ $$v_i(t) \leq u_i(t).$$
+  The aim of the following steps is to show that $E_i$ happens with high probability.
+  
   Now we consider $i$ fixed and define the boolean random variable
   $Y_t$ such that
   \begin{equation*}
@@ -222,17 +225,19 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
         \right\right) \leq \\
       \pr\left(h(t) \geq i + 1 \, \left| \, X_s = \alpha_s \; \forall s < t
           \; \land \; v_i(t-1)\right\right) \leq
-      \left(\frac{\beta_i}{n}\right)^2.
+      \left(\frac{\beta_i}{n}\right)^2
     \end{gathered}
   \end{equation*}
-  Now, defining $p_i = \bigl(\beta_i / n\bigr)^2$, and applying Lemma
+  Since there are at most $\beta_i$ machines with $i$ jobs assigned at time
+  $t-1$.
+  Then defining $p_i = \bigl(\beta_i / n\bigr)^2$, and applying Lemma
   \eqref{Binomial} we get
   \begin{equation*}
     \pr\left(\sum_{t=1}^n Y_t > k \right) \leq \pr\left(B(n, p_i) > k\right).
   \end{equation*}
-  Let us define the event $E_i = \left\{v_i(n) \leq \beta_i\left\}$.
-  Then we can prove that
+  Our next step will be to prove that
   \begin{equation}\label{eq1}
+    \pr\left(\lnot E_{i+1}\, \left| \, E_i\right\right) =
     \pr\left(v_{i+1}(n) > \beta_{i+1}\, \left| \, E_i\right\right) \leq
     \frac{e^{-np_i/3}}{\pr\left(E_i\right)}.
   \end{equation}
@@ -249,19 +254,20 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
     \end{aligned}
   \end{equation*}
     The first inequality is valid since $v_i(t) \leq u_i(t)$ for each
-    $i$ and $t$, the second equality is there since conditioned to $E_i$
-    $\sum_{t=1}^nY_t$ counts the number of $t$ such that $h(t) \geq i$.
+    $i$ and $t$, the second equality is there since, conditioned to $E_i$,
+    the sum    $\sum_{t=1}^nY_t$ counts the number of $t$ such that
+    $h(t) \geq i$.
     Finally the last inequality is an application of Chernoff bound
     \eqref{chernoff_2}.
     If we restrict ourselves to values of $i$ such that $p_i n \geq 6\log(n)$
     we get
-    \begin{equation}\label{eq2}
+    \begin{equation*}
       \pr\left(\lnot E_{i+1} \, \left|\, E_i\right\right) =
       \pr\left(v_{i+1}(n) > \beta_{i+1} \, \left|\, E_i\right\right) \leq
       \frac{1}{n^2 \pr\left(E_i\right)}
-    \end{equation}
+    \end{equation*}
     and therefore
-    \begin{equation*}
+    \begin{equation}\label{eq2}
       \begin{aligned}
       \pr\left(\lnot E_{i+1}\right) =\\
       \pr\left(E_i\right) \cdot
@@ -270,7 +276,7 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
       \pr\left(\lnot E_{i+1} \, \left|\, \lnot E_i\right\right) \leq \\
       \pr\left(\lnot E_i\right) + \frac{1}{n^2}
     \end{aligned}
-    \end{equation*}
+    \end{equation}
     that inducing over $i$ proves that for each $i$ s.t. $p_in \geq 6\log(n)$
     \begin{equation*}
       \pr\left(\lnot E_i\right) \leq \frac{i}{n^2}.
@@ -295,7 +301,7 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
     Applying the same argument of inequality \eqref{eq2} we obtain
     \begin{equation*}
       \pr\left(v_{i^*+1} \geq 12\log(n)\right)\leq
-      \pr\left(\lnot E_i\right) + \frac{1}{n^2} = \frac{i^*+1}{n^2}.
+      \pr\left(\lnot E_{i^*}\right) + \frac{1}{n^2} = \frac{i^*+1}{n^2}.
     \end{equation*}
     
     
