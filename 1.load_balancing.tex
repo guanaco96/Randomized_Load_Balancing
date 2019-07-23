@@ -188,8 +188,8 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
 \end{lemma}
 \begin{proof}{(Lemma)}
   It is sufficient to construct a probability space and random variables
-  $\bigl(\tilde{Y_i}\bigr)_{i\leq n}$ and $\bigl(Z_i\bigr)_{i=\leq n}$ such that
-  $\bigl(Z_i\bigr)_{i=\leq n}$  are i.i.d. Bernoulli, $Y_i$ and $\tilde{Y}_i$ have the same distribution for each $i\leq n$ and
+  $\bigl(\tilde{Y_i}\bigr)_{i\leq n}$ and $\bigl(Z_i\bigr)_{i\leq n}$ such that
+  $\bigl(Z_i\bigr)_{i\leq n}$  are i.i.d. Bernoulli, $Y_i$ has the same distribution of $\tilde{Y}_i$ for each $i\leq n$ and
   \begin{equation*}
     \pr\left(Y_i \leq Z_i\right) = 1.
   \end{equation*}
@@ -208,8 +208,7 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
   \item $u_i(t)$ is the number of $s \leq t$ such that $h(s) \geq i$
   \item $E_i$ is the event $\left\{v_i(n) \leq \beta_i\left\}$.
   \end{itemize}
-  Notice that $v_i(t)$ and $u_i(t)$ are monotone in both $i$ and $t$. Moreover for each $i$ and $t$ $$v_i(t) \leq u_i(t).$$
-  The aim of the following steps is to show that $E_i$ happens with high probability.
+  Our first goal is to prove that there exists an $i^*=\log\left(\log(n)\right) + O(n)$ such that $\pr\left(E_{i^*}\right) \geq 1 + o(\frac{1}{n})$.     
   
   Now we consider $i$ fixed and define the boolean random variable
   $Y_t$ such that
@@ -249,7 +248,7 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
       \pr\left(\sum_{t=1}^n Y_t > \beta_{i+1}\, \bigg| \,E_i\right) \leq \\
       \frac{\pr\left(\sum_{t=1}^n Y_t > \beta_{i+1}\right)}{\pr\left(E_i\right)}
       \leq \\
-      \frac{\pr\left(B(n, p) > 2n p_i \right)}{\pr\left(E_i\right)} \leq \\ 
+      \frac{\pr\left(B(n, p_i) > 2n p_i \right)}{\pr\left(E_i\right)} \leq \\ 
       \frac{e^{-np_i/3}}{\pr\left(E_i\right)}.
     \end{aligned}
   \end{equation*}
@@ -281,30 +280,65 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
     \begin{equation*}
       \pr\left(\lnot E_i\right) \leq \frac{i}{n^2}.
     \end{equation*}
-    Then we want to find the minimum $i^*$ such that $p_{i^*}n < 6\log(n)$ and
-    our final goal is to prove that
-    $ \pr\left(v_{i^*+3} \geq 1 \right) = o\left(\frac{1}{n}\right)$.
-    Meaning that there is no machine loaded with more than $i^* + 3$
-    jobs with high probability.
-
-    It is easy to prove by induction on that
+    Consider the minimum $i^*$ such that $p_{i^*}n < 6\log(n)$,
+    it is easy to prove by induction that
     \begin{equation*}
       p_{i+4} = 2^{-(2^{i+1} + 2)}
     \end{equation*}
-    hence $i^* = \log\left(\log(n)\right) + O(1)$. Moreover
-    $\beta_{i^* + 1} = 2 p_{i^*}n \leq 12 \log(n)$ then, exploiting the
+    and hence $i^* = \log\left(\log(n)\right) + O(1)$. We have achieved
+    our first goal proving that for each
+    $i \leq \log\left(\log(n)\right) + O(1)$
+    $\pr\left(\lnot E_i\right) \leq \frac{i}{n^2}$.
+
+    Our final goal is to prove that
+    $ \pr\left(v_{i^*+3} \geq 1 \right) = o\left(\frac{1}{n}\right)$.
+    Meaning that there is no machine loaded with more than $i^* + 3$
+    jobs with high probability. We need to prove the following two steps:
+    \begin{enumerate}
+    \item $\pr\left(v_{i^*+1}(n) > 12\log(n)\right)\leq (i^*+1) / n^2$
+    \item $\pr\left(v_{i^*+3}(n) \geq 1)\leq \pr\left(u_{i^*+2}(n) \geq 2)$
+    \end{enumerate}
+    (1.) Noticing that
+    $\beta_{i^* + 1} = 2 p_{i^*}n \leq 12 \log(n)$ and exploiting the
     inequality \eqref{eq1} we get
     \begin{equation*}
-      \pr\left(v_{i^*+1} \geq 12\log(n)\,\left|\, E_i\right \right)\leq
+      \pr\left(v_{i^*+1}(n) > 12\log(n)\,\left|\, E_i\right \right)\leq
       \frac{1}{n^2\pr\left(E_i\right)}.
     \end{equation*}
     Applying the same argument of inequality \eqref{eq2} we obtain
     \begin{equation*}
-      \pr\left(v_{i^*+1} \geq 12\log(n)\right)\leq
+      \pr\left(v_{i^*+1}(n) > 12\log(n)\right)\leq
       \pr\left(\lnot E_{i^*}\right) + \frac{1}{n^2} = \frac{i^*+1}{n^2}.
     \end{equation*}
-    
-    
+    (2.) The variable $u_i(n)$ counts the number of jobs assigned to
+    a machine loaded with at least $i$ jobs while the assignment took
+    place. This entails that
+    $$u_{i+1}(n) \geq 1 \implies u_i(n) \geq 2.$$
+    Moreover from definitions follows easily that $v_i(n) \leq u_i(n)$ and this
+    proves
+    \begin{equation*}
+      \pr\left(v_{i^*+3}(n) \geq 1)\leq 
+      \pr\left(u_{i^*+3}(n) \geq 1\right)\leq
+      \pr\left(u_{i^*+2}(n) \geq 2\right).
+    \end{equation*}
+    Finally we can conclude the proof
+    \begin{equation*}
+      \begin{gathered}
+      \pr\left(v_{i^*+3}(n) \geq 1)\leq \\
+        \pr\left(u_{i^*+2}(n) \geq 2\right) \leq \\
+        \pr\left(v_{i^*+1}(n) > 12\log(n)\right) +
+        \pr\left(v_{i^*+1}(n) \geq 12\log(n)\right) \cdot
+        \pr\left(u_{i^*+2}(n) \geq 2 \,\left|\,v_{i^*+1}(n)
+            \geq 12\log(n)\right \right) \leq \\
+        \frac{i^*+1}{n^2} + \pr\left(B\left(n, \left(12\log(n) / n\right)^2
+            \right) \geq 2 \right)
+        \leq \\
+        \frac{i^*+1}{n^2} + \binom{n}{2}
+        \left(\frac{12\log(n)}{n}\right)^4 = o\left(\frac{1}{n}\right)
+      \end{gathered}
+    \end{equation*}
+    where the last inequality is obtained via union bound
+    over all the combinations.
     
     
 
