@@ -52,7 +52,7 @@ $n$ processors that can execute programs written for a PRAM having
 $n$ processors. We define the delay\footnote{Being eventually
   a random variable.} as the number of DMM operations necessary to simulate
 a PRAM operation. In 1984 Mehlhorn {\em et al.} \cite{art} proved that PRAM
-can be simulated on DMM with a delay of $O\bigl(\log\bigl(n\bigr)\bigr)$
+can be simulated on DMM with a delay of $O\bigl(\log\bigl(n\bigr)\bigr / \log\bigl(\log(n)\bigr))$
  with high probability employing a single hashing scheme. 
 We are now exposing an algorithm published by Karp {\em et al.} \cite{Karp} in
 1996 that
@@ -196,15 +196,21 @@ and $C$ denote some constant.
 The functions \textsc{Write} and \textsc{Read} simulate the homonym operations
 for a PRAM. Let us now explain how the algorithm works. In order to guarantee
 a low delay while reading cells we want to exploit the two choices scheme,
-this implicitly happens in the cycle of lines \ref{while}--\ref{endwhile} since
-the DMM native method \textsc{Load} fulfill only one of the parallel requests
-returning ``failure'' to all the others.
+so we keep the content of cell $z$ in two different modules $M_{h_1(z)}$ and
+$M_{h_2(z)}$. In this way we will end up retrieving $z$ in the least loaded
+of the two, this implicitly happens in the cycle of lines
+\ref{while}--\ref{endwhile} since
+the DMM native method \textsc{Load} fulfill exactly one of the parallel requests at
+a time returning ``failure'' to all the others.
+On the other hand we ought to keep up to date both copies of $z$
+every time we write into it. If we let the \textsc{Write} method update
+both copies directly we obtain the $O\bigl(\log(n)\bigr / \log\bigl(\log(n)\bigr)\big)$ complexity achieved using only
+one random chosen hash function \cite{art}. Then we need to employ two
+distributed hash tables DHT$_1$ and DHT$_2$ to delay some writing operations.
+As stated in the previous section these structures can be implemented keeping
+the delay constant.
 
 
-They make use of the two distributed hash table DHT$_1$
-and DHT$_2$ that can simulated as stated in the previous section. The role
-of these structures is to prevent 
-The procedure \textsc{Write} try to
 
 
 
