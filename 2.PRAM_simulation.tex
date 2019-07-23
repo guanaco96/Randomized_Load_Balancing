@@ -1,5 +1,103 @@
 \section{PRAM Simulation}
 
+Parallel machines that communicate via shared memory
+(i.e. PRAM, Parallel Random Access Machine) are the most
+commonly used computational model for describing parallel algorithms.
+They provide a full abstraction over the memory management assuming
+that each processor can access concurrently a shared memory. While being
+very comfortable to program those machines are unrealistic from a technological
+viewpoint, in fact parallel shared memory access can only be realized at the
+cost of a significant delay. A more realistic model that takes distributed
+memory into account is constituted by distributed memory machines (DMM) in which
+the memory is divided into modules, one per processor. Since DMM's modules can
+handle only one request at a time, therefore it emerges a phenomenon
+called \textit{memory contention}.
+In trying to get a deeper understanding of the performance
+effects of memory contention it is useful to investigate the simulation of
+ PRAM on DMM. In this survey we will outline the results of Karp {\em et al.} in
+ \cite{Karp} that significantly improved the state of art in this context
+ employing the same two-choice balancing scheme we have seen in the
+ previous section.
+
+ \revadd{ Non ho ancora parlato dello state of art prima di Karp
+   e neppure ho ancora dato i numeri}
+ 
+\subsection{Models Definition}
+  A PRAM is constituted of $P_1, \dots P_m$ processors
+  and a shared memory with cells $U[1, \dots p]$. The processors
+  works in parallel and have random access to the shared memory.
+  Each memory cell of $U$ can store an integer and can be accessed
+  by one processor at a time\footnote{This hypotheses in literature is referred
+    to as ``exclusive read exclusive write'', and the machine we have defined
+    is called EREW-PRAM. However we will write PRAM for brevity.}. \\
+ \\
+  A DMM has processors $P_1, \dots P_n$ communicating via distributed
+  memory modules $M_1, \dots M_n$. Every module behaves like a PRAM
+  shared memory. Processors works in parallel and each
+  processor can access any module\footnote{In the general definition processors
+    are connected with modules through an interconnection network. Since we are
+    interested in measuring the delay induced by memory contention we will
+    isolate its effect assuming a fully connected network.}.
+  Read and Write operations on a module are handled by the module's window
+  allowing concurrent read and concurrent write\footnote{They
+    behave like CRCW-PRAM cells.}. The semantic of concurrent R/W operations
+  is simple:
+  when multiple processor tries to access simultaneously then one is chosen
+  arbitrarily and can access the module, the others are returned a
+  ``failure'' message. 
+
+\subsection{Simulation}
+Simulating a $n$-PRAM on a $n$-DMM means to write a program for a DMM having
+$n$ processors that can execute programs written for a PRAM having
+$n$ processors. We define the delay\footnote{Being eventually
+  a random variable.} as the number of DMM operations necessary to simulate
+a PRAM operation. In 1984 Mehlhorn {\em et al.} \cite{art} proved that PRAM
+can be simulated on DMM with a delay of $O\bigl(\log\bigl(n\bigr)\bigr)$
+ with high probability employing a single hashing scheme. 
+We are now exposing an algorithm published by Karp {\em et al.} \cite{Karp} in
+1996 that
+outperforms the previous one simulating a PRAM with delay
+$O\bigl(\log\bigl(\log(n)\bigr)\bigr)$ with high probabilty.
+Since the aim of this survey is to show an application of the power of the two
+choices we are making some simplifications with respect to the original article.
+In the original paper several families of hash
+functions are carefully
+devised so that they have good independence properties,
+sufficient to prove the simulation 
+performance. We will instead assume that hash functions are sampled from
+a perfectly random family, as we did in the previous section. All the proofs
+have been modified accordingly.
+
+\subsection{Distributed Hash Tables}
+In the algorithm that we want to present it is employed a distributed hash
+table to handle write operation efficiently. Bast {\em et al.} \cite{Bast}
+give randomized algorithms for realizing an hash table on an $n$-processor PRAM
+performing the following operations:
+\begin{itemize}
+\item BUILD$\bigl(S_1, \dots S_n\bigr)$ building the set from $n$ key-value
+  pairs in $O\bigl(\log^*(n)\gibr)$\footnote{Where $\log^*(n)$ is the number of
+    times the logarithm have to iteratively applied to $n$ to obtain a number
+    less or equal than one (i.e. iterated logarithm).}
+\item HASH$\bigl(S_1, \dots S_n\bigr)$ inserting $n$ key-value pairs in  
+  $O\bigl(\log^*(n)\gibr)$
+\item LOOKUP$\bigl(K_1, \dots K_n\bigr)$ returning an of $n$ key-value pairs.
+\end{itemize}
+The semantic of the operation LOOKUP in case that a key is not present is that
+the second value in the pair would be ``failure''. For our purposes we want
+the hash table not to occupy more than $O(n)$ PRAM's memory cells, it is
+then sufficient to slightly modify the implementation of BUILD and LOOKUP
+to make them return ``failure'' in case the structure would exceed that amount.
+
+
+
+\subsection{The Algorithm}
+As stated above the cause of the delay while simulating a DMM on a PRAM is
+the memory contention. Then we should find a good scheme to evenly distribute
+the 
+
+
+
+
 
 %%% Local Variables:
 %%% mode: latex
