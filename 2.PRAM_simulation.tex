@@ -122,30 +122,67 @@ the cells to the least loaded module between $h_1$ and $h_2$ as we did
 for assigning jobs in the previous section. Now we are exposing the
 algorithms employed to simulate READ and WRITE operations in PRAM.
 
-Let DHT$_1$ and DHT$_2$ denote two distributed hash tables.
+Let DHT$_1$ and DHT$_2$ denote two distributed hash tables and $C$ denote some
+constant.
+
+\algblock{ParFor}{EndParFor}
+\algnewcommand\algorithmicparfor{\textbf{parallel for}}
+\algnewcommand\algorithmicpardo{\textbf{do}}
+\algrenewtext{ParFor}[1]{\algorithmicparfor\ #1\ \algorithmicpardo}
+\algrenewtext{EndParFor}{\algorithmicendparfor}
 
 \begin{algorithm}[H]
-  \caption{}\label{pseudocode}
   \begin{algorithmic}[1]
-    \Procedure{WRITE}{$X$}
-      \For {($ j = 1, 2 $)} \label{pseudocode_outer}
-      \If {HASH$\left(\text{DHT}_j, \; X\right)$ == failure}
-      \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, \infty$}
+    \Procedure{Write}{$X$}
+      \For {$ j = 1,\; 2 $} \label{pseudocode_outer}
+      \If {\Call{Hash}{DHT$_j$, $X$} == failure}
+      \State {\Call{Store}{DHT$_j$, $X$, $\infty$}}
         \Else
-        \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, 4$}
+        \State {\Call{Store}{DHT$_j$, $X$, $C$}}
       \EndIf
      \EndFor
-    \EndProcedure
-   \Procedure{WRITE_M}{$X,\; h,\; D$}
-      \For {($ j = 1, 2 $)} \label{pseudocode_outer}
-      \If {HASH$\left(\text{DHT}_j, \; X\right)$ == failure}
-      \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, \infty$}
-        \Else
-        \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, 4$}
-      \EndIf
+     \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \begin{algorithmic}[1]     
+   \Procedure{Store}{$Y$, $h$, $D$}
+      \ParFor {$ i \in \left[1,\dots n\right]$} 
+      \State {\Call{LocalRead}{$Y$, $C$} \Comment{Reads up to $C$ elements
+          of $Y$ saved on $M_i$} 
+      \For {$j \in \left[1,\dots C\right]$}
+      \For {$D$ times}
+      \State {Try to store $y_j$ in $M_{h(y_j)}$}
       \EndFor
+      \EndFor
+      \EndParFor
     \EndProcedure
-  \   
+  \end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+  \begin{algorithmic}[1]
+    \Procedure{Read}{$X$} \Comment {$X = \left\{x_1,\dots x_n\right\}$}
+    \For {$i \in \left[1, \dots n\right] $}
+      \State {Status$[i]$ = failure}
+     \EndFor
+      \For {$ j = 1,\; 2$}
+      \State {\Call{Lookup}{DHT$_j$, $X$}
+      \ParFor {$i \in \left[1,\dots n\right]$}
+      \If {$x_i$ found in DHT$_j$} 
+        \State {Status$[i]$ = success}
+        \EndIf
+      \EndParFor
+      \EndFor
+
+      \While {$\exists \; i \in [1,\dots n]$ s.t. Status$[i]$ == failure}
+      \For {$j = 1,\; 2$}
+      \ParFor {$i \in \left[1,\dots n\right]$}
+      
+      \EndWhile
+     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
