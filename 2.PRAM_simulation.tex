@@ -69,31 +69,88 @@ a perfectly random family, as we did in the previous section. All the proofs
 have been modified accordingly.
 
 \subsection{Distributed Hash Tables}
-In the algorithm that we want to present it is employed a distributed hash
-table to handle write operation efficiently. Bast {\em et al.} \cite{Bast}
+In the algorithm that we want to present a distributed hash
+table is employed to handle write operations efficiently.
+Bast {\em et al.} \cite{Bast}
 give randomized algorithms for realizing an hash table on an $n$-processor PRAM
 performing the following operations:
 \begin{itemize}
-\item BUILD$\bigl(S_1, \dots S_n\bigr)$ building the set from $n$ key-value
-  pairs in $O\bigl(\log^*(n)\gibr)$\footnote{Where $\log^*(n)$ is the number of
+\item BUILD$\bigl(X\bigr)$ building the set from $n$ key-value
+  pairs in $O\bigl(\log^*(n)\bigr)$\footnote{Where $\log^*(n)$ is the number of
     times the logarithm have to iteratively applied to $n$ to obtain a number
     less or equal than one (i.e. iterated logarithm).}
-\item HASH$\bigl(S_1, \dots S_n\bigr)$ inserting $n$ key-value pairs in  
-  $O\bigl(\log^*(n)\gibr)$
-\item LOOKUP$\bigl(K_1, \dots K_n\bigr)$ returning an of $n$ key-value pairs.
+\item HASH$\bigl(\text{DHT, }X\bigr)$ inserting $n$ key-value pairs in  
+  $O\bigl(\log^*(n)\bigr)$
+\item LOOKUP$\bigl(\text{DHT, }Y\bigr)$ returning an array of $n$ key-value pairs in $O(1)$
 \end{itemize}
+where $X = \bigl\{S_1, \dots S_n\gibr\}$ is a set of $n$ key-value pairs,
+$Y = \bigl\{K_1, \dots K_n\gibr\}$ is a set of $n$ keys, and DHT is the
+distributed hash table performing the operation.
 The semantic of the operation LOOKUP in case that a key is not present is that
 the second value in the pair would be ``failure''. For our purposes we want
 the hash table not to occupy more than $O(n)$ PRAM's memory cells, it is
 then sufficient to slightly modify the implementation of BUILD and LOOKUP
 to make them return ``failure'' in case the structure would exceed that amount.
+Finally all the operation complexities are intended with high probability.
+
+So far we have an implementation of the hash table for a PRAM while we
+want the data structure implemented on a DMM, the following lemma will
+guarantee that we can implement the same structure as long as it does not
+exceed $O(n)$ memory usage.
+
+\begin{lemma}
+  An $n$-processor PRAM with $m$ memory cells can be simulated on an
+  $n$-processor DMM with delay $O\bigl(m / n\bigr)$.
+\end{lemma}
+\begin{proof}
+  Partition the $m$ cells of PRAM into the $n$ modules of DMM. Now any parallel
+  access to those cells can be simulated serializing it $O\bigl(m / n\bigr)$
+  DMM operations.
+\end{proof}
 
 
 
 \subsection{The Algorithm}
-As stated above the cause of the delay while simulating a DMM on a PRAM is
+As stated at the beginning of this section the cause of the delay
+while simulating a DMM on a PRAM is
 the memory contention. Then we should find a good scheme to evenly distribute
-the 
+PRAM's cells among DMM's modules. Mehlhorn {\em et al.} \cite{art} algorithm
+consisted in choosing one random function $h$ and assigning cell $i$ to the
+module $h(i)$. We will instead choose two hash function $h_1$ and $h_2$
+form the perfectly random function $\mathcal{H}$ and assign sequentially
+the cells to the least loaded module between $h_1$ and $h_2$ as we did
+for assigning jobs in the previous section. Now we are exposing the
+algorithms employed to simulate READ and WRITE operations in PRAM.
+
+Let DHT$_1$ and DHT$_2$ denote two distributed hash tables.
+
+\begin{algorithm}[H]
+  \caption{}\label{pseudocode}
+  \begin{algorithmic}[1]
+    \Procedure{WRITE}{$X$}
+      \For {($ j = 1, 2 $)} \label{pseudocode_outer}
+      \If {HASH$\left(\text{DHT}_j, \; X\right)$ == failure}
+      \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, \infty$}
+        \Else
+        \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, 4$}
+      \EndIf
+     \EndFor
+    \EndProcedure
+   \Procedure{WRITE_M}{$X,\; h,\; D$}
+      \For {($ j = 1, 2 $)} \label{pseudocode_outer}
+      \If {HASH$\left(\text{DHT}_j, \; X\right)$ == failure}
+      \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, \infty$}
+        \Else
+        \State {WRITE_M$\left(\text{DHT}_j \cup X, h_j, 4$}
+      \EndIf
+      \EndFor
+    \EndProcedure
+  \   
+  \end{algorithmic}
+\end{algorithm}
+
+
+
 
 
 
