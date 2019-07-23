@@ -120,10 +120,10 @@ module $h(i)$. We will instead choose two hash function $h_1$ and $h_2$
 form the perfectly random function $\mathcal{H}$ and assign sequentially
 the cells to the least loaded module between $h_1$ and $h_2$ as we did
 for assigning jobs in the previous section. Now we are exposing the
-algorithms employed to simulate READ and WRITE operations in PRAM.
-
-Let DHT$_1$ and DHT$_2$ denote two distributed hash tables and $C$ denote some
-constant.
+algorithms employed to simulate read and write operations in PRAM.
+Let DHT$_1$ and DHT$_2$ denote two distributed hash tables, $X$ and $Y$ denote
+sets of location-value pairs, $Z$ denotes a set of memory locations
+and $C$ denote some constant.
 
 \algblock{ParFor}{EndParFor}
 \algnewcommand\algorithmicparfor{\textbf{parallel for}}
@@ -134,11 +134,11 @@ constant.
 \begin{algorithm}[H]
   \begin{algorithmic}[1]
     \Procedure{Write}{$X$}
-      \For {$ j = 1,\; 2 $} \label{pseudocode_outer}
-      \If {\Call{Hash}{DHT$_j$, $X$} == failure}
-      \State {\Call{Store}{DHT$_j$, $X$, $\infty$}}
+      \For {$ j = 1,\; 2 $}
+      \If {\Call{Hash}{DHT$_j$, $X$} = failure}
+      \State {\Call{Move}{DHT$_j$, $X$, $\infty$}}
         \Else
-        \State {\Call{Store}{DHT$_j$, $X$, $C$}}
+        \State {\Call{Move}{DHT$_j$, $X$, $C$}}
       \EndIf
      \EndFor
      \EndProcedure
@@ -147,13 +147,14 @@ constant.
 
 \begin{algorithm}[H]
   \begin{algorithmic}[1]     
-   \Procedure{Store}{$Y$, $h$, $D$}
+   \Procedure{Move}{$Y$, $h$, $D$}
       \ParFor {$ i \in \left[1,\dots n\right]$} 
       \State {\Call{LocalRead}{$Y$, $C$} \Comment{Reads up to $C$ elements
           of $Y$ saved on $M_i$} 
       \For {$j \in \left[1,\dots C\right]$}
       \For {$D$ times}
-      \State {Try to store $y_j$ in $M_{h(y_j)}$}
+      \State {\Call{Store}{$y_j$, $M_{h(y_j)}$} \Comment{Ordinary DMM
+          storing mechanism}
       \EndFor
       \EndFor
       \EndParFor
@@ -164,28 +165,46 @@ constant.
 
 \begin{algorithm}[H]
   \begin{algorithmic}[1]
-    \Procedure{Read}{$X$} \Comment {$X = \left\{x_1,\dots x_n\right\}$}
+    \Procedure{Read}{$Z$} \Comment {$Z = \left\{z_1,\dots z_n\right\}$}
     \For {$i \in \left[1, \dots n\right] $}
       \State {Status$[i]$ = failure}
      \EndFor
       \For {$ j = 1,\; 2$}
-      \State {\Call{Lookup}{DHT$_j$, $X$}
+      \State {\Call{Lookup}{DHT$_j$, $Z$}
       \ParFor {$i \in \left[1,\dots n\right]$}
-      \If {$x_i$ found in DHT$_j$} 
+      \If {$z_i$ found in DHT$_j$} 
         \State {Status$[i]$ = success}
         \EndIf
       \EndParFor
       \EndFor
-
-      \While {$\exists \; i \in [1,\dots n]$ s.t. Status$[i]$ == failure}
+      \While {$\exists \; k \in [1,\dots n]$ s.t. Status$[k]$ = failure}
+      \label{while}
       \For {$j = 1,\; 2$}
       \ParFor {$i \in \left[1,\dots n\right]$}
+      \If {Status$[i]$ = failure}
+      \State {outc = \Call{Load}{$z_i$, $M_{h_j(z_i)}$}}
+      \Comment{DMM loading mechanism}
+      \EndIf
+      \If {Status$[i]$ = failure \&  outc = success} 
+      \State {Status$[i]$ = success} \label{endwhile}
       
       \EndWhile
      \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
+The functions \textsc{Write} and \textsc{Read} simulate the homonym operations
+for a PRAM. Let us now explain how the algorithm works. In order to guarantee
+a low delay while reading cells we want to exploit the two choices scheme,
+this implicitly happens in the cycle of lines \ref{while}--\ref{endwhile} since
+the DMM native method \textsc{Load} fulfill only one of the parallel requests
+returning ``failure'' to all the others.
+
+
+They make use of the two distributed hash table DHT$_1$
+and DHT$_2$ that can simulated as stated in the previous section. The role
+of these structures is to prevent 
+The procedure \textsc{Write} try to
 
 
 
