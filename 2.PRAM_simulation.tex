@@ -24,9 +24,10 @@ effects of memory contention it is useful to investigate the simulation of
   and a shared memory with cells $U[1, \dots p]$. The processors
   works in parallel and have random access to the shared memory.
   Each memory cell of $U$ can store an integer and can be accessed
-  by one processor at a time\footnote{This hypotheses in literature is referred
-    to as ``exclusive read exclusive write'', and the machine we have defined
-    is called EREW-PRAM. However we will write PRAM for brevity.}. \\
+  by more than one processor simultaneously\footnote{This
+    hypotheses in literature is referred
+    to as ``concurrent read concurrent write'', and the machine we have defined
+    is called CRCW-PRAM. However we will write PRAM for brevity.}. \\
  \\
   A DMM has processors $P_1, \dots P_n$ communicating via distributed
   memory modules $M_1, \dots M_n$. Every module behaves like a PRAM
@@ -37,10 +38,12 @@ effects of memory contention it is useful to investigate the simulation of
     isolate its effect assuming a fully connected network.}.
   Read and Write operations on a module are handled by a module's window
   allowing concurrent read and concurrent write\footnote{They
-    behave like CRCW-PRAM cells.}. The semantic of concurrent R/W operations
+    behave like CRCW-PRAM cells.}. The semantic of concurrent read/write
+  operations
   is simple:
-  when multiple processor tries to access simultaneously then one is chosen
-  arbitrarily and can access the module, the others are returned a
+  when multiple processors try to access a single module simultaneously then
+  one processor is chosen
+  arbitrarily and can access the module, all the others are returned a
   ``failure'' message. 
 
 \subsection{Simulation}
@@ -76,7 +79,7 @@ performing the following operations:
 \begin{itemize}
 \item \textsc{Build}$\bigl(X\bigr)$ building the set from $n$ key-value
   pairs in $O\bigl(\log^*(n)\bigr)$\footnote{Where $\log^*(n)$ is the number of
-    times the logarithm have to iteratively applied to $n$ to obtain a number
+    times the logarithm have to be iteratively applied to $n$ to obtain a number
     less or equal than one (i.e. iterated logarithm).}
 \item \textsc{Hash}$\bigl(\text{DHT, }X\bigr)$ inserting $n$ key-value pairs in  
   $O\bigl(\log^*(n)\bigr)$
@@ -108,8 +111,6 @@ exceed $O(n)$ memory usage.
   access to those cells can be simulated serializing it $O\bigl(m / n\bigr)$
   DMM operations.
 \end{proof}
-
-
 
 \subsection{The Algorithm}
 As stated at the beginning of this section the cause of the delay
@@ -215,8 +216,8 @@ distributed hash tables DHT$_1$ and DHT$_2$ to delay some writing operations.
 As stated in the previous section these structures can be implemented keeping
 the delay constant.
 The algorithm always try to write virtual cells on hash tables, if that causes
-an hash table overflow then if simulate writes in the naive manner flushing also
-the entire table content into the a priori assigned modules.
+an hash table overflow then it performs write operations in the naive manner
+and flushes the entire table content into the a priori assigned modules.
 If the write operation on hash table succeeds then a constant amount of
 DHTs content per processor is flushed into the proper modules.
 
@@ -228,7 +229,7 @@ We will prove that this simulation causes a delay of at most $O\bigl(\log\bigl(\
 time thanks to the Lemma \ref{delay_lemma}. The number of steps necessary to
 executes lines \ref{while}--\ref{endwhile} is the maximum number of queries
 that a module actually handles. Considering the sequential scheme used
-to process queries it turns out that we are assigning each cell to the
+to process queries it turns out that we are reading each cell from the
 least so far queried module, exactly like we did for jobs and machine in the previous section. Then from the Theorem \ref{bigthm} it follows that the
 number of steps is $O\bigl(\log\bigl(\log(n)\bigl)\bigl)$ with high probability.
 
@@ -236,7 +237,7 @@ number of steps is $O\bigl(\log\bigl(\log(n)\bigl)\bigl)$ with high probability.
 grasp it is not as easy to prove a complexity upper bound. The analysis deals
 with a complex stochastic process and its study is not within the focus of this
 survey. The interested reader can find its analysis in Karp {\em et al.}
-\cite{Karp} under the nickname of ``process\_2''. It is proven that
+\cite{Karp} under the nickname of ``process\_2'' where it is also proven that
 \textsc{Move} method takes $O\bigl(\log*(n)\bigr)$ time with high probability.
 This leads to the conclusion that even \textsc{Write} method takes
 $O\bigl(\log*(n)\bigr)$ time with high probability and the analysis is

@@ -10,13 +10,13 @@ the simulation of PRAMs on DMMs. In both cases it turned out that if we
 employ a randomized hashing scheme it is much more convenient to employ
 the two choices scheme, in this way we get an exponential reduction of the
 maximum load. Although proving the effectiveness of the gain was not simple
-we did not increase the algorithm complexity significantly, then the algorithm
-remains practical to implement.
+we did not increase the algorithm complexity significantly, indeed the two choices scheme is still practical to implement.
 
 \paragraph{Further Readings.} The reader that is interested in finding
 other applications of this paradigm may look at the paper from
 Pagh and Rodler \cite{Pagh} that brilliantly exploit the two
-choices to build an hash table with wort-case constant lookup time. Another
+choices to build ``Cuckoo Hashing'', an hash table with wort-case constant
+lookup time. Another
 interesting application is the work of Cole {\em et al.} \cite{Cole} that employs
 this technique to minimize congestion in message routing over two-fold butterfly
 networks.

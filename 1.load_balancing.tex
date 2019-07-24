@@ -28,7 +28,7 @@ of execution
 time not to deviate from expectation. As a consequence while devising
 random algorithms we often do not content ourself of analyzing their
 performance on average, instead we look for probabilistic guarantees
-that execution times will concentrate around average.
+that execution time will concentrate around average.
 
 For the rest of this subsection let $\bigl(X_i\bigr)$ be i.i.d. random
 variables with mean $\mu$ and variance $\sigma^2$, and define $X = \sum_{i=1}^n X_i$ a random variable with mean $\bar{\mu} = n\mu$ and variance $\bar{\sigma}^2 = n\sigma^2$ . How is $X$ concentrated around $\mathbb{E}\bigl[X\bigr] = \bar{\mu}$?
@@ -158,7 +158,7 @@ between $h_1(i)$ and $h_2(i)$.
 For the sake of simplicity we will assume that $n=m$ and prove\footnote{This
   proof is rather technical and it has been taken from Mitzenmacher
   {\em et al.} \cite{Mitzenmacher}} the following theorem bounding
-the maximum load.
+the maximum load from above.
 
 \begin{theorem}{\textbf{(Two Choices Balancing)} \label{bigthm}
     Suppose that we assign $n$ jobs to $n$ machines following the algorithm
@@ -199,16 +199,16 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
 \begin{proof}(Theorem)
   Let us start defining several variables:
   \begin{itemize}
-  \item $\beta_i$ is a sequence such that $\beta_4 = n / 4$ and
+  \item $\beta_i$ a sequence such that $\beta_4 = n / 4$ and
     $\beta_{i+1} = 2\beta_i^2 / n$
-  \item $h(t)$ is the number of jobs assigned to the machine chosen
-    at time step t
-  \item $v_i(t)$ is the number of machines having assigned at least $i$
+  \item $h(t)$ the number of jobs assigned to the machine chosen
+    at time step t so far
+  \item $v_i(t)$ the number of machines having assigned at least $i$
     jobs at time step $t$
-  \item $u_i(t)$ is the number of $s \leq t$ such that $h(s) \geq i$
-  \item $E_i$ is the event $\left\{v_i(n) \leq \beta_i\left\}$.
+  \item $u_i(t)$ the number of $s \leq t$ such that $h(s) \geq i$
+  \item $E_i$ the event $\left\{v_i(n) \leq \beta_i\left\}$.
   \end{itemize}
-  Our first goal is to prove that there exists an $i^*=\log\left(\log(n)\right) + O(n)$ such that $\pr\left(E_{i^*}\right) \geq 1 + o(\frac{1}{n})$.     
+  Our first goal is to prove that there exists an $i^*=\log\left(\log(n)\right) + O(1)$ such that $\pr\left(E_{i^*}\right) \geq 1 + o(\frac{1}{n})$.     
   
   Now we consider $i$ fixed and define the boolean random variable
   $Y_t$ such that
@@ -221,12 +221,15 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
   \begin{equation*}
     \begin{gathered}
       \pr\left(Y_t = 1 \, \left| \, X_s = \alpha_s \; \forall s < t
-        \right\right) \leq \\
+        \right\right) \leq \footnotemark \\
       \pr\left(h(t) \geq i + 1 \, \left| \, X_s = \alpha_s \; \forall s < t
           \; \land \; v_i(t-1)\right\right) \leq
       \left(\frac{\beta_i}{n}\right)^2
     \end{gathered}
   \end{equation*}
+  \footnotetext{This inequality holds if $\pr\bigl(X_s = \alpha_s \;
+        \forall s < t \; \land \; v_i(t-1) \leq \beta_i\bigr) > 0$ and otherwise
+      LHS is null.}
   Since there are at most $\beta_i$ machines with $i$ jobs assigned at time
   $t-1$.
   Then defining $p_i = \bigl(\beta_i / n\bigr)^2$, and applying Lemma
@@ -299,7 +302,7 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
     \item $\pr\left(v_{i^*+3}(n) \geq 1)\leq \pr\left(u_{i^*+2}(n) \geq 2)$
     \end{enumerate}
     (1.) Noticing that
-    $\beta_{i^* + 1} = 2 p_{i^*}n \leq 12 \log(n)$ and exploiting the
+    $\beta_{i^* + 1} = 2 p_{i^*}n < 12 \log(n)$ and exploiting the
     inequality \eqref{eq1} we get
     \begin{equation*}
       \pr\left(v_{i^*+1}(n) > 12\log(n)\,\left|\, E_i\right \right)\leq
