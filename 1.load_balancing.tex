@@ -160,7 +160,7 @@ For the sake of simplicity we will assume that $n=m$ and prove\footnote{This
   {\em et al.} \cite{Mitzenmacher}} the following theorem bounding
 the maximum load.
 
-\begin{theorem}{\textbf{(Two Choices Balancing)}
+\begin{theorem}{\textbf{(Two Choices Balancing)} \label{bigthm}
     Suppose that we assign $n$ jobs to $n$ machines following the algorithm
     above. Denoting with $X_j$ the number of jobs assigned to the $j$-th
     machine we get
@@ -338,14 +338,7 @@ where $B(n,p)$ is a Binomial random variable having parameters $n$ and $p$.
       \end{gathered}
     \end{equation*}
     where the last inequality is obtained via union bound
-    over all the combinations.
-    
-    \revadd{
-      final remarks comparing the two and stating that this kind of problems
-      are usually referred to as balls and bins.
-      }
-
-    
+    over all the combinations.    
 \end{proof}
 
 

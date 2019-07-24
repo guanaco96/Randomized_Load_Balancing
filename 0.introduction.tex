@@ -1,15 +1,35 @@
 \section{Introduction}
 
-\revadd{
-  Qui parlo di
-  \begin{itemize}
-
-  \item Problem statement (Balls and Bin)
-  \item History of advancements (Cite the two results mentioned in abstract)
-  \item Applications (Hashing, Load Balancing, PRAM simulation, Circuit Routing).
-
-  \end{itemize}
-  Queste info le trovo su Mitzenmacher {\em et al.} \cite{Mitzenmacher}}
+A famous problem in algorithmic literature is the ``Balls and Bins Problem'',
+in this survey we will expose two settings in which this problem arises
+and present a brilliant approach employing a randomized algorithm to
+solve it efficiently.
+Suppose that we dispose of $n$ balls and we want to put them into $m$
+bins so that approximately each bin gets the same amount of balls, to be
+more precise we want some guarantee that the maximum number of balls
+in any bin does not deviate too much from the average. It is easy to find
+a mapping $f:\bigl[1,\dots n]\longrightarrow[1,\dots m]$ that satisfies the
+constraints above. Consider now the game in which an adversary want to
+find the set $f^{-1}\bigl(\{j\}\bigr)$ for any $j \in [1,\dots m]$ and we
+have to prevent him from doing so. Finding a mapping that satisfies also
+this last constraint is more complicated,
+and we need to employ randomization to do so.
+The simplest algorithm to solve this problem\footnote{Exposed by D. E. Knuth in \cite{Knuth}.} consists in selecting a random
+hash function $h$ and mapping each ball $i$ to the bin corresponding to
+$h\bigl(i\bigr) \pmod{m}$. It turns out that each bin has
+less than $O\bigl(\log(n) / \log\bigl(\log(n)\bigr)\bigr)$ balls with high probability\footnote{``With high
+  probability'' (w.h.p.) is a widespread formula in
+  algorithmic literature and means ``with
+  probability at least $1 - 1 / n$''.}. We will see that employing two randomly
+chosen hash function will lower this concentration bound exponentially\footnote{This results is due to Azar
+  {\em et al.} \cite{Azar}.}.
+In section 2 we will describe this algorithm in details, proving the
+concentration bound, and apply it to the problem of balancing a distributed
+server back-end. In section 3 we will apply this solution to another interesting
+problem in theoretical computer science: the simulation of shared memory
+machines (PRAM) on distributed memory machines (DMM), even in this case it
+turned out that a two choices approach led to an improvement in the state of
+art. 
 
 %%% Local Variables:
 %%% mode: latex

@@ -19,9 +19,6 @@ effects of memory contention it is useful to investigate the simulation of
  employing the same two-choice balancing scheme we have seen in the
  previous section.
 
- \revadd{ Non ho ancora parlato dello state of art prima di Karp
-   e neppure ho ancora dato i numeri}
- 
 \subsection{Models Definition}
   A PRAM is constituted of $P_1, \dots P_m$ processors
   and a shared memory with cells $U[1, \dots p]$. The processors
@@ -59,7 +56,7 @@ distribute virtual PRAM's
 We are now exposing an algorithm published by Karp {\em et al.} \cite{Karp} in
 1996 that
 outperforms the previous one simulating a PRAM with delay
-$O\bigl(\log\bigl(\log(n)\bigr)\bigr)$ with high probabilty.
+$O\bigl(\log\bigl(\log(n)\bigr)\bigr)$ with high probability.
 We are making some simplifications with respect to the original article,
 the major one pertains the choice of hash functions.
 In the original paper several families of hash
@@ -83,12 +80,12 @@ performing the following operations:
     less or equal than one (i.e. iterated logarithm).}
 \item \textsc{Hash}$\bigl(\text{DHT, }X\bigr)$ inserting $n$ key-value pairs in  
   $O\bigl(\log^*(n)\bigr)$
-\item \textsc{LookUp}$\bigl(\text{DHT, }Y\bigr)$ returning an array of $n$ key-value pairs in $O(1)$
+\item \textsc{Lookup}$\bigl(\text{DHT, }Y\bigr)$ returning an array of $n$ key-value pairs in $O(1)$
 \end{itemize}
 where $X = \bigl\{S_1, \dots S_n\gibr\}$ is a set of $n$ key-value pairs,
 $Y = \bigl\{K_1, \dots K_n\gibr\}$ is a set of $n$ keys, and DHT is the
 distributed hash table performing the operation.
-The semantic of the operation \textsc{LookUp} in case that a key is not present is that
+The semantic of the operation \textsc{Lookup} in case that a key is not present is that
 the second value in the returned pair is ``failure''. For our purposes we want
 the hash table not to occupy more than $O(n)$ PRAM's memory cells, it is
 then sufficient to slightly modify the implementation of \textsc{Build} and
@@ -102,7 +99,7 @@ guarantee that we can implement the same structure with constant delay
 as long as it does not
 exceed $O(n)$ memory usage.
 
-\begin{lemma}
+\begin{lemma}\label{delay_lemma}
   An $n$-processor PRAM with $m$ memory cells can be simulated on an
   $n$-processor DMM with delay $O\bigl(m / n\bigr)$.
 \end{lemma}
@@ -124,13 +121,12 @@ module $M_{h(z)}$. We will instead choose two hash functions $h_1$ and $h_2$
 form the perfectly random function $\mathcal{H}$ and keep a copy of the cell
 $z$ in both modules $M_{h_1(z)}$ and $M_{h_2(z)}$. In this way we will
 end up reading the content of $z$ from the
-least loaded\footnote{In this context ``loaded'' means queried by processors
-requesti} module between $h_1$ and $h_2$ as we did
+least queried module between $h_1$ and $h_2$ as we did
 for assigning jobs in the previous section. Now we are exposing the
 algorithms employed to simulate PRAM's read and write operations.
-Let DHT$_1$ and DHT$_2$ denote two distributed hash tables, $X$ and $Y$ denote
+In the pseudocode DHT$_1$ and DHT$_2$ denote two distributed hash tables, $X$ and $Y$ denote
 sets of location-value pairs, $Z$ denotes a set of memory locations
-and $C$ denote some constant.
+and $C$ denotes a constant.
 
 \algblock{ParFor}{EndParFor}
 \algnewcommand\algorithmicparfor{\textbf{parallel for}}
@@ -140,18 +136,43 @@ and $C$ denote some constant.
 
 \begin{algorithm}[H]
   \begin{algorithmic}[1]
+    \Procedure{Read}{$Z$} \Comment {Read virtual cells in
+      $Z = \left\{z_1,\dots z_n\right\}$}
+    \ParFor {$i \in \left[1, \dots n\right] $} \label{const}
+      \State {Status$[i]$ = failure}
+     \EndParFor
+      \For {$ j = 1,\; 2$} \Comment{Read virtual cells stored
+          in the table}
+      \State {\Call{Lookup}{DHT$_j$, $Z$} 
+      \ParFor {$i \in \left[1,\dots n\right]$}
+      \If {$z_i$ found in DHT$_j$} 
+        \State {Status$[i]$ = success} \label{endconst}
+        \EndIf
+      \EndParFor
+      \EndFor
+      \While {$\exists \; k \in [1,\dots n]$ s.t. Status$[k]$ = failure}
+      \label{while} \Comment{Until everything is read}
+      \For {$j = 1,\; 2$} \Comment{Loads from the less busy module}
+      \ParFor {$i \in \left[1,\dots n\right]$}
+      \If {Status$[i]$ = failure}
+      \State {outc = \Call{Load}{$z_i$, $M_{h_j(z_i)}$}}
+      \Comment{DMM loading mechanism}
+      \EndIf
+      \If {Status$[i]$ = failure \&  outc = success} 
+      \State {Status$[i]$ = success} \label{endwhile}
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \begin{algorithmic}[1]
     \Procedure{Write}{$X$} \Comment{Write values of $X$ in PRAM's virtual cells}
       \For {$ j = 1,\; 2 $}
-      \If {\Call{Hash}{DHT$_j$, $X$} = failure} \Comment{Try to store them
-        in the table} 
+      \If {\Call{Hash}{DHT$_j$, $X$} = failure} \Comment{Hash table overflow} 
       \State {\Call{Move}{DHT$_j \cup X$, $h_j$, $\infty$}} \Comment{Flush
         everything in case of failure}
         \Else
         \State {\Call{Move}{DHT$_j$, $h_j$, $C$}} \Comment{Flush a constant
           amount of values}
-      \EndIf
-     \EndFor
-     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
@@ -166,63 +187,60 @@ and $C$ denote some constant.
       \For {$D$ times, until succeeded}
       \State {\Call{Store}{$y_j$, $M_{h(y_j)}$} \Comment{DMM
           storing mechanism}
-      \EndFor
-      \EndFor
-      \EndParFor
-    \EndProcedure
   \end{algorithmic}
 \end{algorithm}
+The functions \textsc{Write} and \textsc{Read} simulate the homonym PRAM's operations. Let us explain how the algorithm works.
 
-
-\begin{algorithm}[H]
-  \begin{algorithmic}[1]
-    \Procedure{Read}{$Z$} \Comment {Read virtual cells in
-      $Z = \left\{z_1,\dots z_n\right\}$}
-    \For {$i \in \left[1, \dots n\right] $}
-      \State {Status$[i]$ = failure}
-     \EndFor
-      \For {$ j = 1,\; 2$} \Comment{Read virtual cells stored
-          in the table}
-      \State {\Call{Lookup}{DHT$_j$, $Z$} 
-      \ParFor {$i \in \left[1,\dots n\right]$}
-      \If {$z_i$ found in DHT$_j$} 
-        \State {Status$[i]$ = success}
-        \EndIf
-      \EndParFor
-      \EndFor
-      \While {$\exists \; k \in [1,\dots n]$ s.t. Status$[k]$ = failure}
-      \label{while} \Comment{Until everything is read}
-      \For {$j = 1,\; 2$} \Comment{Loads from the less busy module}
-      \ParFor {$i \in \left[1,\dots n\right]$}
-      \If {Status$[i]$ = failure}
-      \State {outc = \Call{Load}{$z_i$, $M_{h_j(z_i)}$}}
-      \Comment{DMM loading mechanism}
-      \EndIf
-      \If {Status$[i]$ = failure \&  outc = success} 
-      \State {Status$[i]$ = success} \label{endwhile}
-      
-      \EndWhile
-     \EndProcedure
-  \end{algorithmic}
-\end{algorithm}
-
-The functions \textsc{Write} and \textsc{Read} simulate the homonym operations
-for a PRAM. Let us now explain how the algorithm works. In order to guarantee
+\paragraph{{\bf Read}.} In order to guarantee
 a low delay while reading cells we want to exploit the two choices scheme,
 so we keep the content of cell $z$ in two different modules $M_{h_1(z)}$ and
-$M_{h_2(z)}$. In this way we will end up retrieving $z$ in the least loaded
-of the two, this implicitly happens in the cycle of lines
+$M_{h_2(z)}$ whenever it does not fit in the limited space distributed hash tables DHT$_1$ or DHT$_2$. As we stated above in this way we will end up
+retrieving $z$ in the least queried
+module of the two whenever we miss it in DHTs. This implicitly happens in the cycle of lines
 \ref{while}--\ref{endwhile} since
-the DMM native method \textsc{Load} fulfill exactly one of the parallel requests at
-a time returning ``failure'' to all the others.
-On the other hand we ought to keep up to date both copies of $z$
-every time we write into it. If we let the \textsc{Write} method update
-both copies directly we obtain the $O\bigl(\log(n)\bigr / \log\bigl(\log(n)\bigr)\big)$ complexity achieved using only
-one random chosen hash function \cite{art}. Then we need to employ two
+the DMM native method \textsc{Load} fulfills exactly one of the parallel requests at
+a time returning ``failure'' to all the others. To ensure the correctness and
+of \textsc{Read} method we ought to ensure that the following invariant holds
+at any time step of the simulation.
+\paragraph{Invariant:} For each PRAM's virtual memory cell $z$ if the content of
+$z$ is not stored in $DHT_1$ nor in $DHT_2$ then it is stored in both
+$M_{h_1(z)}$ and $M_{h_2(z)}$.
+
+\paragraph{{\bf Write}.}On the write side we need to keep the invariant true.
+If we employed a naive algorithm and let \textsc{Write}
+method update
+both copies directly then we would obtain the $O\bigl(\log(n)\bigr / \log\bigl(\log(n)\bigr)\big)$ complexity achieved using only
+one random chosen hash function \cite{art}. Thus we need to employ two
 distributed hash tables DHT$_1$ and DHT$_2$ to delay some writing operations.
 As stated in the previous section these structures can be implemented keeping
 the delay constant.
+The algorithm always try to write virtual cells on hash tables, if that causes
+an hash table overflow then if simulate writes in the naive manner flushing also
+the entire table content into the a priori assigned modules.
+If the write operation on hash table succeeds then a constant amount of
+DHTs content per processor is flushed into the proper modules.
 
+\subsection{Analysis}
+We will prove that this simulation causes a delay of at most $O\bigl(\log\bigl(\log(n)\bigl)\bigl)$ for both operations.
+
+\paragraph{{\bf Read}.} It is sufficient to notice that lines
+\ref{const}--\ref{endconst} takes constant
+time thanks to the Lemma \ref{delay_lemma}. The number of steps necessary to
+executes lines \ref{while}--\ref{endwhile} is the maximum number of queries
+that a module actually handles. Considering the sequential scheme used
+to process queries it turns out that we are assigning each cell to the
+least so far queried module, exactly like we did for jobs and machine in the previous section. Then from the Theorem \ref{bigthm} it follows that the
+number of steps is $O\bigl(\log\bigl(\log(n)\bigl)\bigl)$ with high probability.
+
+\paragraph{{\bf Write}.} While the correctness of this algorithm is easy to
+grasp it is not as easy to prove a complexity upper bound. The analysis deals
+with a complex stochastic process and its study is not within the focus of this
+survey. The interested reader can find its analysis in Karp {\em et al.}
+\cite{Karp} under the nickname of ``process\_2''. It is proven that
+\textsc{Move} method takes $O\bigl(\log*(n)\bigr)$ time with high probability.
+This leads to the conclusion that even \textsc{Write} method takes
+$O\bigl(\log*(n)\bigr)$ time with high probability and the analysis is
+completed.
 
 
 

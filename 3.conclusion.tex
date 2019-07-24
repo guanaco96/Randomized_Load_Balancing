@@ -1,5 +1,26 @@
 \section{Conclusion}
 
+The problem tackled in this survey was to construct an assignment that was
+persistent and balanced, not only
+on average but with high probability, thus preventing an adversarial choice of
+objects from unbalancing it.
+We exposed two different settings in which
+this problem naturally emerges: the job assignment in a distributed server and
+the simulation of PRAMs on DMMs. In both cases it turned out that if we
+employ a randomized hashing scheme it is much more convenient to employ
+the two choices scheme, in this way we get an exponential reduction of the
+maximum load. Although proving the effectiveness of the gain was not simple
+we did not increase the algorithm complexity significantly, then the algorithm
+remains practical to implement.
+
+\paragraph{Further Readings.} The reader that is interested in finding
+other applications of this paradigm may look at the paper from
+Pagh and Rodler \cite{Pagh} that brilliantly exploit the two
+choices to build an hash table with wort-case constant lookup time. Another
+interesting application is the work of Cole {\em et al.} \cite{Cole} that employs
+this technique to minimize congestion in message routing over two-fold butterfly
+networks.
+
 
 %%% Local Variables:
 %%% mode: latex
