@@ -10,7 +10,7 @@ viewpoint, in fact parallel shared memory access can only be realized at the
 cost of a significant delay. A more realistic model that takes distributed
 memory into account is constituted by distributed memory machines (DMM) in which
 the memory is divided into modules, one per processor. Since DMM's modules can
-handle only one request at a time, therefore it emerges a phenomenon
+handle only one request at a time, it emerges a phenomenon
 called \textit{memory contention}.
 In trying to get a deeper understanding of the performance
 effects of memory contention it is useful to investigate the simulation of
@@ -38,7 +38,7 @@ effects of memory contention it is useful to investigate the simulation of
     are connected with modules through an interconnection network. Since we are
     interested in measuring the delay induced by memory contention we will
     isolate its effect assuming a fully connected network.}.
-  Read and Write operations on a module are handled by the module's window
+  Read and Write operations on a module are handled by a module's window
   allowing concurrent read and concurrent write\footnote{They
     behave like CRCW-PRAM cells.}. The semantic of concurrent R/W operations
   is simple:
@@ -53,13 +53,15 @@ $n$ processors. We define the delay\footnote{Being eventually
   a random variable.} as the number of DMM operations necessary to simulate
 a PRAM operation. In 1984 Mehlhorn {\em et al.} \cite{art} proved that PRAM
 can be simulated on DMM with a delay of $O\bigl(\log\bigl(n\bigr)\bigr / \log\bigl(\log(n)\bigr))$
- with high probability employing a single hashing scheme. 
+with high probability, they employed a single hashing scheme to
+distribute virtual PRAM's
+ memory cells among DMM's modules. 
 We are now exposing an algorithm published by Karp {\em et al.} \cite{Karp} in
 1996 that
 outperforms the previous one simulating a PRAM with delay
 $O\bigl(\log\bigl(\log(n)\bigr)\bigr)$ with high probabilty.
-Since the aim of this survey is to show an application of the power of the two
-choices we are making some simplifications with respect to the original article.
+We are making some simplifications with respect to the original article,
+the major one pertains the choice of hash functions.
 In the original paper several families of hash
 functions are carefully
 devised so that they have good independence properties,
@@ -75,27 +77,29 @@ Bast {\em et al.} \cite{Bast}
 give randomized algorithms for realizing an hash table on an $n$-processor PRAM
 performing the following operations:
 \begin{itemize}
-\item BUILD$\bigl(X\bigr)$ building the set from $n$ key-value
+\item \textsc{Build}$\bigl(X\bigr)$ building the set from $n$ key-value
   pairs in $O\bigl(\log^*(n)\bigr)$\footnote{Where $\log^*(n)$ is the number of
     times the logarithm have to iteratively applied to $n$ to obtain a number
     less or equal than one (i.e. iterated logarithm).}
-\item HASH$\bigl(\text{DHT, }X\bigr)$ inserting $n$ key-value pairs in  
+\item \textsc{Hash}$\bigl(\text{DHT, }X\bigr)$ inserting $n$ key-value pairs in  
   $O\bigl(\log^*(n)\bigr)$
-\item LOOKUP$\bigl(\text{DHT, }Y\bigr)$ returning an array of $n$ key-value pairs in $O(1)$
+\item \textsc{LookUp}$\bigl(\text{DHT, }Y\bigr)$ returning an array of $n$ key-value pairs in $O(1)$
 \end{itemize}
 where $X = \bigl\{S_1, \dots S_n\gibr\}$ is a set of $n$ key-value pairs,
 $Y = \bigl\{K_1, \dots K_n\gibr\}$ is a set of $n$ keys, and DHT is the
 distributed hash table performing the operation.
-The semantic of the operation LOOKUP in case that a key is not present is that
-the second value in the pair would be ``failure''. For our purposes we want
+The semantic of the operation \textsc{LookUp} in case that a key is not present is that
+the second value in the returned pair is ``failure''. For our purposes we want
 the hash table not to occupy more than $O(n)$ PRAM's memory cells, it is
-then sufficient to slightly modify the implementation of BUILD and LOOKUP
+then sufficient to slightly modify the implementation of \textsc{Build} and
+\textsc{Hash}
 to make them return ``failure'' in case the structure would exceed that amount.
 Finally all the operation complexities are intended with high probability.
 
 So far we have an implementation of the hash table for a PRAM while we
 want the data structure implemented on a DMM, the following lemma will
-guarantee that we can implement the same structure as long as it does not
+guarantee that we can implement the same structure with constant delay
+as long as it does not
 exceed $O(n)$ memory usage.
 
 \begin{lemma}
@@ -114,13 +118,16 @@ exceed $O(n)$ memory usage.
 As stated at the beginning of this section the cause of the delay
 while simulating a DMM on a PRAM is
 the memory contention. Then we should find a good scheme to evenly distribute
-PRAM's cells among DMM's modules. Mehlhorn {\em et al.} \cite{art} algorithm
-consisted in choosing one random function $h$ and assigning cell $i$ to the
-module $h(i)$. We will instead choose two hash function $h_1$ and $h_2$
-form the perfectly random function $\mathcal{H}$ and assign sequentially
-the cells to the least loaded module between $h_1$ and $h_2$ as we did
+PRAM's virtual cells among DMM's modules. Mehlhorn {\em et al.} \cite{art} assignment
+consisted in choosing one random function $h$ and assign cell $z$ to the
+module $M_{h(z)}$. We will instead choose two hash functions $h_1$ and $h_2$
+form the perfectly random function $\mathcal{H}$ and keep a copy of the cell
+$z$ in both modules $M_{h_1(z)}$ and $M_{h_2(z)}$. In this way we will
+end up reading the content of $z$ from the
+least loaded\footnote{In this context ``loaded'' means queried by processors
+requesti} module between $h_1$ and $h_2$ as we did
 for assigning jobs in the previous section. Now we are exposing the
-algorithms employed to simulate read and write operations in PRAM.
+algorithms employed to simulate PRAM's read and write operations.
 Let DHT$_1$ and DHT$_2$ denote two distributed hash tables, $X$ and $Y$ denote
 sets of location-value pairs, $Z$ denotes a set of memory locations
 and $C$ denote some constant.
@@ -133,12 +140,15 @@ and $C$ denote some constant.
 
 \begin{algorithm}[H]
   \begin{algorithmic}[1]
-    \Procedure{Write}{$X$}
+    \Procedure{Write}{$X$} \Comment{Write values of $X$ in PRAM's virtual cells}
       \For {$ j = 1,\; 2 $}
-      \If {\Call{Hash}{DHT$_j$, $X$} = failure}
-      \State {\Call{Move}{DHT$_j$, $X$, $\infty$}}
+      \If {\Call{Hash}{DHT$_j$, $X$} = failure} \Comment{Try to store them
+        in the table} 
+      \State {\Call{Move}{DHT$_j \cup X$, $h_j$, $\infty$}} \Comment{Flush
+        everything in case of failure}
         \Else
-        \State {\Call{Move}{DHT$_j$, $X$, $C$}}
+        \State {\Call{Move}{DHT$_j$, $h_j$, $C$}} \Comment{Flush a constant
+          amount of values}
       \EndIf
      \EndFor
      \EndProcedure
@@ -147,13 +157,14 @@ and $C$ denote some constant.
 
 \begin{algorithm}[H]
   \begin{algorithmic}[1]     
-   \Procedure{Move}{$Y$, $h$, $D$}
+    \Procedure{Move}{$Y$, $h$, $D$} \Comment{Try $D$ times to store
+      $C$ values of $Y$ per module}
       \ParFor {$ i \in \left[1,\dots n\right]$} 
-      \State {\Call{LocalRead}{$Y$, $C$} \Comment{Reads up to $C$ elements
+      \State {\Call{LocalRead}{$Y$, $C$, $M_i$} \Comment{Reads up to $C$ elements
           of $Y$ saved on $M_i$} 
       \For {$j \in \left[1,\dots C\right]$}
-      \For {$D$ times}
-      \State {\Call{Store}{$y_j$, $M_{h(y_j)}$} \Comment{Ordinary DMM
+      \For {$D$ times, until succeeded}
+      \State {\Call{Store}{$y_j$, $M_{h(y_j)}$} \Comment{DMM
           storing mechanism}
       \EndFor
       \EndFor
@@ -165,12 +176,14 @@ and $C$ denote some constant.
 
 \begin{algorithm}[H]
   \begin{algorithmic}[1]
-    \Procedure{Read}{$Z$} \Comment {$Z = \left\{z_1,\dots z_n\right\}$}
+    \Procedure{Read}{$Z$} \Comment {Read virtual cells in
+      $Z = \left\{z_1,\dots z_n\right\}$}
     \For {$i \in \left[1, \dots n\right] $}
       \State {Status$[i]$ = failure}
      \EndFor
-      \For {$ j = 1,\; 2$}
-      \State {\Call{Lookup}{DHT$_j$, $Z$}
+      \For {$ j = 1,\; 2$} \Comment{Read virtual cells stored
+          in the table}
+      \State {\Call{Lookup}{DHT$_j$, $Z$} 
       \ParFor {$i \in \left[1,\dots n\right]$}
       \If {$z_i$ found in DHT$_j$} 
         \State {Status$[i]$ = success}
@@ -178,8 +191,8 @@ and $C$ denote some constant.
       \EndParFor
       \EndFor
       \While {$\exists \; k \in [1,\dots n]$ s.t. Status$[k]$ = failure}
-      \label{while}
-      \For {$j = 1,\; 2$}
+      \label{while} \Comment{Until everything is read}
+      \For {$j = 1,\; 2$} \Comment{Loads from the less busy module}
       \ParFor {$i \in \left[1,\dots n\right]$}
       \If {Status$[i]$ = failure}
       \State {outc = \Call{Load}{$z_i$, $M_{h_j(z_i)}$}}
